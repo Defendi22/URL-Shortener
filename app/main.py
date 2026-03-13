@@ -7,14 +7,13 @@ from app.config import settings
 from app.database import Base, engine, get_db
 from app.schemas import URLCreate, URLResponse, URLStats
 
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI(title="URL Shortener", version="1.0.0")
 
 
 @app.on_event("startup")
 def startup():
     Base.metadata.create_all(bind=engine)
+
 
 @app.get("/health")
 def health_check():
