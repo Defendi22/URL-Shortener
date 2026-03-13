@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    database_url: str = "postgresql://postgres:postgres@localhost:5432/urlshortener"
+    database_url: str = "sqlite:///./default.db"
     secret_key: str = "dev-secret-change-in-production"
     base_url: str = "http://localhost:8000"
     code_length: int = 6
