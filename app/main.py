@@ -1,6 +1,8 @@
 from fastapi import Depends, FastAPI, HTTPException
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
+from pathlib import Path
 
 from app import crud, models
 from app.config import settings
@@ -8,6 +10,8 @@ from app.database import Base, engine, get_db
 from app.schemas import URLCreate, URLResponse, URLStats
 
 app = FastAPI(title="URL Shortener", version="1.0.0")
+
+FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
 
 
 @app.on_event("startup")
@@ -18,6 +22,11 @@ def startup():
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+
+
+@app.get("/")
+def serve_frontend():
+    return FileResponse(FRONTEND_DIR / "index.html")
 
 
 @app.post("/shorten", response_model=URLResponse, status_code=201)

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>URL.SHORT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Mono', monospace;
+      background: #0a0a0a;
+      color: #e8e8e8;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .container { width: 100%; max-width: 560px; }
+
+    .header { margin-bottom: 3rem; }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -2px;
+    }
+
+    .logo span { color: #c8f135; }
+
+    .tagline {
+      font-size: 0.75rem;
+      color: #555;
+      margin-top: 0.5rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 4px;
+      padding: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .input-row { display: flex; gap: 0.5rem; }
+
+    input[type="text"] {
+      flex: 1;
+      background: #0a0a0a;
+      border: 1px solid #2a2a2a;
+      border-radius: 2px;
+      padding: 0.75rem 1rem;
+      color: #e8e8e8;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus { border-color: #c8f135; }
+    input[type="text"]::placeholder { color: #333; }
+
+    button {
+      background: #c8f135;
+      color: #0a0a0a;
+      border: none;
+      border-radius: 2px;
+      padding: 0.75rem 1.5rem;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: opacity 0.2s;
+    }
+
+    button:hover { opacity: 0.85; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .result {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #1e1e1e;
+      display: none;
+    }
+
+    .result.visible { display: block; }
+
+    .result-label {
+      font-size: 0.65rem;
+      color: #444;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .result-url {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #0a0a0a;
+      border: 1px solid #1e1e1e;
+      border-radius: 2px;
+      padding: 0.75rem 1rem;
+      gap: 1rem;
+    }
+
+    .result-url span {
+      color: #c8f135;
+      font-size: 0.9rem;
+      word-break: break-all;
+    }
+
+    .copy-btn {
+      background: transparent;
+      color: #555;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.7rem;
+      border: 1px solid #2a2a2a;
+      flex-shrink: 0;
+    }
+
+    .copy-btn:hover { color: #c8f135; border-color: #c8f135; opacity: 1; }
+
+    .stats-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .stat {
+      flex: 1;
+      background: #0a0a0a;
+      border: 1px solid #1e1e1e;
+      border-radius: 2px;
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #c8f135;
+    }
+
+    .stat-label {
+      font-size: 0.65rem;
+      color: #444;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 0.25rem;
+    }
+
+    .error-msg {
+      margin-top: 1rem;
+      font-size: 0.75rem;
+      color: #ff4444;
+      display: none;
+    }
+
+    .error-msg.visible { display: block; }
+
+    .history { margin-top: 1rem; }
+
+    .history-label {
+      font-size: 0.65rem;
+      color: #333;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid #161616;
+      font-size: 0.78rem;
+      gap: 1rem;
+    }
+
+    .history-item:last-child { border-bottom: none; }
+
+    .history-code { color: #c8f135; cursor: pointer; }
+    .history-code:hover { text-decoration: underline; }
+    .history-original { color: #444; font-size: 0.72rem; margin-top: 0.2rem; }
+    .history-count { color: #333; font-size: 0.7rem; flex-shrink: 0; }
+
+    .empty-history {
+      font-size: 0.72rem;
+      color: #2a2a2a;
+      text-align: center;
+      padding: 1rem 0;
+    }
+
+    .footer {
+      margin-top: 2rem;
+      font-size: 0.65rem;
+      color: #2a2a2a;
+      letter-spacing: 1px;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate { animation: fadeIn 0.3s ease forwards; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">URL<span>.</span>SHORT</div>
+      <div class="tagline">encurtador minimalista</div>
+    </div>
+
+    <div class="card">
+      <div class="input-row">
+        <input type="text" id="urlInput" placeholder="https://sua-url-longa.com/aqui" />
+        <button id="shortenBtn" onclick="shortenUrl()">Encurtar</button>
+      </div>
+      <div class="error-msg" id="errorMsg"></div>
+
+      <div class="result" id="result">
+        <div class="result-label">Link encurtado</div>
+        <div class="result-url">
+          <span id="shortUrl"></span>
+          <button class="copy-btn" onclick="copyUrl()">COPIAR</button>
+        </div>
+        <div class="stats-row">
+          <div class="stat">
+            <div class="stat-value" id="accessCount">0</div>
+            <div class="stat-label">acessos</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="createdAt">—</div>
+            <div class="stat-label">criado</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="history" id="historySection">
+      <div class="history-label">histórico</div>
+      <div id="historyList">
+        <div class="empty-history">nenhum link encurtado ainda</div>
+      </div>
+    </div>
+
+    <div class="footer">powered by fastapi + postgresql</div>
+  </div>
+
+  <script>
+    const API = '';  // vazio = mesma origem
+    let history = JSON.parse(localStorage.getItem('urlHistory') || '[]');
+
+    function saveHistory() {
+      localStorage.setItem('urlHistory', JSON.stringify(history));
+    }
+
+    function timeAgo(dateStr) {
+      const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+      if (diff < 60) return `${diff}s`;
+      if (diff < 3600) return `${Math.floor(diff/60)}m`;
+      if (diff < 86400) return `${Math.floor(diff/3600)}h`;
+      return `${Math.floor(diff/86400)}d`;
+    }
+
+    async function shortenUrl() {
+      const input = document.getElementById('urlInput');
+      const btn = document.getElementById('shortenBtn');
+      const errorMsg = document.getElementById('errorMsg');
+      const url = input.value.trim();
+
+      if (!url) return;
+
+      btn.disabled = true;
+      btn.textContent = '...';
+      errorMsg.classList.remove('visible');
+
+      try {
+        const res = await fetch(`${API}/shorten`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ original_url: url })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'URL inválida');
+        }
+
+        const data = await res.json();
+
+        document.getElementById('shortUrl').textContent = data.short_url;
+        document.getElementById('accessCount').textContent = '0';
+        document.getElementById('createdAt').textContent = timeAgo(data.created_at);
+
+        const result = document.getElementById('result');
+        result.classList.add('visible', 'animate');
+
+        const existing = history.findIndex(h => h.short_code === data.short_code);
+        if (existing === -1) {
+          history.unshift({
+            short_code: data.short_code,
+            short_url: data.short_url,
+            original_url: data.original_url,
+            created_at: data.created_at,
+            access_count: 0
+          });
+          saveHistory();
+        }
+
+        renderHistory();
+        input.value = '';
+
+      } catch (err) {
+        errorMsg.textContent = err.message;
+        errorMsg.classList.add('visible');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Encurtar';
+      }
+    }
+
+    async function copyUrl() {
+      const url = document.getElementById('shortUrl').textContent;
+      await navigator.clipboard.writeText(url);
+      const btn = document.querySelector('.copy-btn');
+      btn.textContent = 'COPIADO!';
+      setTimeout(() => btn.textContent = 'COPIAR', 2000);
+    }
+
+    async function refreshStats(short_code) {
+      try {
+        const res = await fetch(`${API}/stats/${short_code}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const item = history.find(h => h.short_code === short_code);
+        if (item) {
+          item.access_count = data.access_count;
+          saveHistory();
+          renderHistory();
+        }
+      } catch {}
+    }
+
+    function renderHistory() {
+      const list = document.getElementById('historyList');
+
+      if (history.length === 0) {
+        list.innerHTML = '<div class="empty-history">nenhum link encurtado ainda</div>';
+        return;
+      }
+
+      list.innerHTML = history.map(item => `
+        <div class="history-item animate">
+          <div>
+            <div class="history-code" onclick="navigator.clipboard.writeText('${item.short_url}')">${item.short_url}</div>
+            <div class="history-original">${item.original_url}</div>
+          </div>
+          <div class="history-count">${item.access_count} acessos</div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('urlInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') shortenUrl();
+    });
+
+    renderHistory();
+    history.forEach(item => refreshStats(item.short_code));
+  </script>
+</body>
+</html>
